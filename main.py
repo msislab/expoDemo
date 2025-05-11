@@ -21,16 +21,20 @@ robotS_speed = 0.3 # 0 to 1
 pcb_safe_height = 0
 gripper_safe_height = 0
 
-robotG_home = np.array(700, 45, 430 , 90, 0, 0)
-robotS_home = np.array(250, -30, 380 , 90, 0, 90)
+robotG_home = np.array([700, 45, 430 , 90, 0, 0])
+robotS_home = np.array([250, -30, 380 , 90, 0, 90])
 
-pcb1home = np.array(575.406, 24.9550, 263.38 +gripper_safe_height, 90, 0, 0.5)
-pcb2home = np.array(575.406, 24.9550, 263.38 +gripper_safe_height, 90, 0, 0.5)
-PickPosition = np.array(575.406, 24.9550, 263.38 +pcb_safe_height, 90, 0, 90)
-P1 = np.array(575.406, 24.9550, 263.38 +pcb_safe_height, 90, 0, 90)
-P2 = np.array(575.68, 81.68, 263.38 + pcb_safe_height, 90, 0, 90)
-P3 = np.array(668.08, 80.93, 263.38 + pcb_safe_height, 90, 0, 90)
-P4 = np.array(668.08, 24.14, 263.55 + pcb_safe_height, 90, 0, 90)
+pcb1home = np.array([984.85, -52.51, 290.21 +gripper_safe_height, 90, -0.5, -1.8])
+pcb2home = np.array([986.74, 47.30, 306.56 +gripper_safe_height, 90, 0, -1.1])
+
+PickPosition = np.array([575.406, 24.9550, 263.38 +pcb_safe_height, 90, 0, 90])
+
+#screwing locations from pcb1
+P1 = np.array([575.406, 24.9550, 263.38 +pcb_safe_height, 90, 0, 90])
+P2 = np.array([575.68, 81.68, 263.38 + pcb_safe_height, 90, 0, 90])
+P3 = np.array([668.08, 80.93, 263.38 + pcb_safe_height, 90, 0, 90])
+P4 = np.array([668.08, 24.14, 263.55 + pcb_safe_height, 90, 0, 90])
+#screwing locations from pcb2
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -44,17 +48,17 @@ def gripper_init(robot,rc):
         script = f"gripper_macro 6,2,0,0,0,0,0,0,0,0"
         robot.eval(rc, script, True)
         time.sleep(10)
-        script = f"gripper_macro 6,2,1,0,force,speed,acc,0,0,0"
-        robot.eval(rc, script, True)
+        #script = f"gripper_macro 6,2,1,0,force,speed,acc,0,0,0"
+        #robot.eval(rc, script, True)
 
         script = f"gripper_macro 6,2,2,0,{str(100)},0,0,0,0,0"
         robot.eval(rc, script, True)
         print(time.sleep(10))
-        if ( gripper_pos(robot,rc)-100) > 1:
-            error_msg = "Gripper Error, Commanded and Feedback position not Equal"
-            print(error_msg)
-            fatal_error = True
-            exit(error_msg)
+        #if ( gripper_pos(robot,rc)-100) > 1:
+        #    error_msg = "Gripper Error, Commanded and Feedback position not Equal"
+        #    print(error_msg)
+        #    fatal_error = True
+        #    exit(error_msg)
 
 
 
@@ -80,6 +84,61 @@ def gripper_pos(robot,rc):
 
 
 def robotG_move_home(robotG, rc):
+    # move robot to home.
+
+    robotG.move_l(rc,robotG_home,100,100)
+    rc.error().throw_if_not_empty()
+    if robotG.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robotG.wait_for_move_finished(rc)
+    rc.error().throw_if_not_empty()
+
+def robotG_move_pcb1(robot, rc):
+    #set safe height for robot approach using j motion
+    pcb_safe_height= 20
+    robot.move_l(rc,pcb1home,200,400)
+    if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robot.wait_for_move_finished(rc)
+    rc.error().throw_if_not_empty()
+
+    #approach the pcb
+    pcb_safe_height = 0
+    robot.move_l(rc,pcb1home,200,400)
+    if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robot.wait_for_move_finished(rc)
+    rc.error().throw_if_not_empty()
+
+    #Gripper jaws to 40 %.
+    gripper_move(robot,rc,40)
+    while(gripper_pos(robot,rc)!=40):
+        time.sleep(1)
+
+    pcb_safe_height = 20
+    robot.move_l(rc,pcb1home,200,400)
+    if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robot.wait_for_move_finished(rc)
+    rc.error().throw_if_not_empty()
+
+
+def robotG_move_pcb2(robot, rc):
+    # set safe height for robot approach using j motion
+    pcb_safe_height = 20
+    robot.move_l(rc,pcb2home,200,400)
+    rc.error().throw_if_not_empty()
+    if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robot.wait_for_move_finished(rc)
+
+
+    # approach the pcb
+    pcb_safe_height = 0
+    robot.move_l(rc,pcb2home,200,400)
+    if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
+        robot.wait_for_move_finished(rc)
+    rc.error().throw_if_not_empty()
+
+    # Gripper jaws to 40 %.
+    gripper_move(robot, rc, 50)
+    while (gripper_pos(robot, rc) != 50):
+        time.sleep(1)
 
 
 def _main():
@@ -87,50 +146,43 @@ def _main():
 
         #initialize cobots
         robotG = rb.Cobot(ROBOT_IP_G)
-        robotS = rb.Cobot(ROBOT_IP_S)
+        # robotS = rb.Cobot(ROBOT_IP_S)
 
         rc = rb.ResponseCollector()
 
-        gripper_init(robotG, rc)
-        time.sleep(5)
+        robotG.set_operation_mode(rc, rb.OperationMode.Real)
+        robotG.set_speed_bar(rc, 0.2) #30% speed
 
+
+        #robotS.set_operation_mode(rc, rb.OperationMode.Real)
+        #robotS.set_speed_bar(rc, 0.3) #30% speed
+
+        gripper_init(robotG, rc)
 
         #ready the gripper
-        pos = gripper_move(robotG, 50)
-
+        gripper_move(robotG, rc,50)
+        print("Gripper set to 50%")
         #move robot to home.
-        robotG.move_j(robotG_home)
-        if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
-            robot.wait_for_move_finished(rc)
-        rc.error().throw_if_not_empty()
+        robotG_move_home(robotG,rc)
+        print("arrived at home")
+
+        robotG_move_pcb1(robotG,rc)
+
+        robotG_move_pcb2(robotG,rc)
+
+        robotG_move_home(robotG, rc)
 
 
-        robotG.set_operation_mode(rc, rb.OperationMode.Real)
-        robotG.set_speed_bar(rc, 0.3) #30% speed
 
-
-        robot.move_l(rc,np.array([346,0,432,90,0,90]),200,400 )
-        if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
-            robot.wait_for_move_finished(rc)
-        rc.error().throw_if_not_empty()
-
-        robot.move_l(rc, np.array([346, 105.5 , 291, 90, 0, 90]), 200, 400)
-        if robot.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
-            robot.wait_for_move_finished(rc)
-        rc.error().throw_if_not_empty()
-
-        res, cb_info = robot.get_control_box_info(rc)
-        if res.is_success():
-            print(f"Control Box Info: {cb_info}")
 
         # Move Shank to tighten to 40mm code 00=0
-        robot.set_dout_bit_combination(rc, 0, 1, 0, rb.Endian.LittleEndian)
+        #robot.set_dout_bit_combination(rc, 0, 1, 0, rb.Endian.LittleEndian)
         # Tighten Bit code 10 = 2
-        robot.set_dout_bit_combination(rc, 0, 1,2, rb.Endian.LittleEndian)
+        #robot.set_dout_bit_combination(rc, 0, 1,2, rb.Endian.LittleEndian)
         # Move Shank to loosen to 48mm code 01 =1
-        robot.set_dout_bit_combination(rc, 0, 1, 1, rb.Endian.LittleEndian)
+        #robot.set_dout_bit_combination(rc, 0, 1, 1, rb.Endian.LittleEndian)
         # loosen code  11 =3
-        robot.set_dout_bit_combination(rc, 0, 1, 3, rb.Endian.LittleEndian)
+        #robot.set_dout_bit_combination(rc, 0, 1, 3, rb.Endian.LittleEndian)
 
 
         robot.flush(rc)
