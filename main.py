@@ -81,7 +81,7 @@ def gripper_init(robot,rc):
     finally:
         pass
 
-
+#add while wait and timeout
 def gripper_move(robot,rc, pos):
     try:
         script = f"gripper_macro 6,2,2,0,{str(pos)},0,0,0,0,0"
@@ -188,13 +188,35 @@ def robotG_move_pcb2(robot, rc, pickOrDrop):
         time.sleep(0.5)
     print("Arrived at pcb2home +20mm")
     pcb2home[2] = pcb2home[2] - 20
-
 def _main():
+    # initialize cobots
+    robotG = rb.Cobot(ROBOT_IP_G)
+    #robotS = rb.Cobot(ROBOT_IP_S)
+
+    rc = rb.ResponseCollector()
+
+    robotG.set_operation_mode(rc, rb.OperationMode.Real)
+    robotG.set_speed_bar(rc, robot_speed)  # 30% speed
+
+    # robotS.set_operation_mode(rc, rb.OperationMode.Real)
+    # robotS.set_speed_bar(rc, robot_speed) #30% speed
+
+    position = np.array([0, 0, 0, 0, 0, 0])
+    res, position = robotG.get_tcp_info(rc)
+    print (res)
+
+    print ("(["+str(position[0])+", "+str(position[1])+", "+str(position[2])+
+           ", "+str(position[3])+", "+str(position[4])+", "+str(position[5])+"])")
+
+    #robotG.get_system_variable(rc, rb.SystemVariable.JRT_JEGB)[1]
+    robot.get_system_variable(rc, rb.SystemVariable.SD_
+    
+def _main1():
     try:
 
         #initialize cobots
         robotG = rb.Cobot(ROBOT_IP_G)
-        #robotS = rb.Cobot(ROBOT_IP_S)
+        robotS = rb.Cobot(ROBOT_IP_S)
 
         rc = rb.ResponseCollector()
 
@@ -208,7 +230,7 @@ def _main():
         gripper_init(robotG, rc)
 
         #ready the gripper
-        gripper_move(robotG, rc,50)
+        gripper_move(robotG, rc,jaws_HO)
         print("Gripper set to 50%")
         #move robot to home.
         robotG_move_home(robotG,rc)
