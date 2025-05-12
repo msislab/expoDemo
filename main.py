@@ -206,11 +206,19 @@ def _main():
     print (res)
 
     print ("(["+str(position[0])+", "+str(position[1])+", "+str(position[2])+
-           ", "+str(position[3])+", "+str(position[4])+", "+str(position[5])+"])")
+           ", "+str(position[3])+", "+str(position[4])+", "+str(position[5])+"])\n")
 
     #robotG.get_system_variable(rc, rb.SystemVariable.JRT_JEGB)[1]
-    robot.get_system_variable(rc, rb.SystemVariable.SD_
-    
+    res, J0 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J0_ANG)
+    res, J1 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J1_ANG)
+    res, J2 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J2_ANG)
+    res, J3 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J3_ANG)
+    res, J4 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J4_ANG)
+    res, J5 = robotG.get_system_variable(rc, rb.SystemVariable.SD_J5_ANG)
+    print("([" + str(J0) + ", " + str(J1) + ", " + str(J2) +
+          ", " + str(J3) + ", " + str(J4) + ", " + str(J5) + "])\n")
+    print (res)
+
 def _main1():
     try:
 
