@@ -38,12 +38,14 @@ pcb_safe_height = 0
 gripper_safe_height = 0
 
 robotS_home_j = np.array ([34.64, -35.65, 122.06, 3.59, 90.04, -34.66])
+robotS_home = ([590.257, 47.2, 436.718, 89.992, 0.011, 0.992])
+
 screwFeederHome_j = np.array ([15.681, -15.192, 122.239, -17.048, 90.031, -15.715])
 screwFeeder = np.array ([390.27, -4.48, 333.5 , 90.0, -0.0, 90.0])
-#screwFeeder = np.array ([316.301, -29.953, 323.489, 89.999, 0.001, 90.001])
 
 robotG_home_j = ([173.8, 1.21, -113.95, 22.731, -89.93, 277.11])
-robotS_home = ([590.257, 47.2, 436.718, 89.992, 0.011, 0.992])
+robotG_home = ([0 ,0 ,0 ,0 ,0 , 0])
+
 
 pcb1home_j = np.array ([170.477, -42.137, -68.748, 20.876, -89.956, 279.955])
 pcb1home = np.array ([984.93, -53.28, 285.5, 90.0, 0.01, 0.5])
@@ -52,12 +54,14 @@ pcb2home_j = np.array ([176.31, -42.34, -69.03, 21.37, -89.95, 274.62])
 pcb2home = np.array ([985.03, 47.07, 285.71, 90.0, -0.0, 0.5])
 
 p = np.zeros((18, 6), dtype=np.float16)
+
 #screwing locations from pcb1
 p[0] = np.array([575.406, 24.9550, 263.38, 90, 0, 90])
 p[1] = np.array([575.68, 81.68, 263.38, 90, 0, 90])
 p[2] = np.array([668.08, 80.93, 263.38, 90, 0, 90])
 p[3] = np.array([668.08, 24.14, 263.55, 90, 0, 90])
 
+#screwing locations from pcb2
 p[4] = np.array ([576.74, -73.58, 245.0, 90.0, -0.0, 90.0])
 p[5] = np.array ([576.559, -16.968, 245.001, 90.0, 0.001, 90.001])
 p[6] = np.array ([669.09, -17.3, 245.0, 90.0, -0.0, 90.0])
@@ -69,7 +73,7 @@ p[9] = np.array([364.9, 180.46, 245.0, 90.0, 0.0, 90.0])
 p[10] = np.array ([458.6, 180.8, 245.0, 90.0, 0.0, 90.0])
 p[11] = np.array ([458.8, 124.4, 245.0, 90.0, 0.0, 90.0])
 
-#drop points from p[12] to p[13]
+#Screw drop points from p[12] to p[13]
 p[12] = np.array ([288.144, 151.854, 285.714, 90.0, -0.0, 90.0]) #xyz
 p[13] = np.array ([47.495, -20.605, 138.863, -28.258, 90.032, -47.533]) #joints
 
@@ -398,6 +402,10 @@ def _main8():
 
         # screw home position
         robotS_move_home(robotS, rc)
+        print("Robot have arrived at ")
+
+        while robotS.get_tcp_info(rc)[1][0] != robotS_home[0]:
+            print(". ")
 
         # ready the gripper
         gripper_move(robotG, rc, jaws_HO)
@@ -406,6 +414,7 @@ def _main8():
         robotG_move_home(robotG, rc)
         print("Arrived at robotG_home")
 
+        res, points = robotS.get_tcp_info(rc,)
         robotG_move_pcb1(robotG, rc, pick)
         robotG_move_pcb2(robotG, rc, drop)
         robotG_move_home(robotG, rc)
@@ -425,11 +434,16 @@ def _main8():
         #dropScrew(robotS, rc)
         #gripper_init(robotG, rc)
 
-        #robotG_move_pcb2(robotG, rc, pick)
-        #robotG_move_pcb1(robotG, rc, drop)
+        #screwing done move to home
+        robotS_move_home(robotS, rc)
+
+        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
+            print(". ")
+
+        robotG_move_pcb2(robotG, rc, pick)
+        robotG_move_pcb1(robotG, rc, drop)
 
         # screw Robot home position
-        robotS_move_home(robotS, rc)
         robotG_move_home(robotG, rc)
 
 
