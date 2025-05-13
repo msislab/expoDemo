@@ -109,15 +109,12 @@ def gripper_init(robot,rc):
         script = f"gripper_macro 6,2,0,0,0,0,0,0,0,0"
         robot.eval(rc, script, True)
         time.sleep(7)
-        script = f"gripper_macro 6,2,1,0,5,100,100,0,0,0"
-        robot.eval(rc, script, True)
-
-        script = f"gripper_macro 6,2,2,0,{str(50)},0,0,0,0,0"
+        script = f"gripper_macro 6,2,1,0,5,50,100,0,0,0"
         robot.eval(rc, script, True)
         while (gripper_pos(robot, rc) != 50):
             time.sleep(0.5)
 
-        #if ( gripper_pos(robot,rc)-100) > 1:
+        #if ( gripper_pos(robot,rc)-100) < 1:
         #    error_msg = "Gripper Error, Commanded and Feedback position not Equal"
         #    print(error_msg)
         #    fatal_error = True
@@ -404,9 +401,7 @@ def _main8():
         robotS_move_home(robotS, rc)
         print("Robot have arrived at ")
 
-        while robotS.get_tcp_info(rc)[1][0] != robotS_home[0]:
-            print(". ")
-
+        gripper_init(robotG, rc)
         # ready the gripper
         gripper_move(robotG, rc, jaws_HO)
         print("Gripper position: 50%")
@@ -414,12 +409,17 @@ def _main8():
         robotG_move_home(robotG, rc)
         print("Arrived at robotG_home")
 
-        res, points = robotS.get_tcp_info(rc,)
+        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
+            print(". ")
+
+        #res, points = robotS.get_tcp_info(rc,)
         robotG_move_pcb1(robotG, rc, pick)
         robotG_move_pcb2(robotG, rc, drop)
         robotG_move_home(robotG, rc)
-        # screw at pcb2
 
+        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
+            print(". ")
+        # screw at pcb2
         pickScrew(robotS, rc)
         screw_pcb(robotS, rc, p[4])
         pickScrew(robotS, rc)
@@ -429,10 +429,14 @@ def _main8():
         #pickScrew(robotS, rc)
         #screw_pcb(robotS, rc, p[7])
 
-        #unscrew(robotS, rc, p[8])
-        #unscrew(robotS, rc, p[9])
+        #unscrew(robotS, rc, p[4])
+        # dropScrew(robotS, rc)
+        #unscrew(robotS, rc, p[5])
         #dropScrew(robotS, rc)
-        #gripper_init(robotG, rc)
+        # unscrew(robotS, rc, p[6])
+        # dropScrew(robotS, rc)
+        # unscrew(robotS, rc, p[7])
+        # dropScrew(robotS, rc)
 
         #screwing done move to home
         robotS_move_home(robotS, rc)
@@ -445,16 +449,16 @@ def _main8():
 
         # screw Robot home position
         robotG_move_home(robotG, rc)
-
-
-
         robotS.flush(rc)
         robotG.flush(rc)
+
     except Exception as e:
         print(e)
+
     finally:
         pass
-    print_hi('PyCharm')
+
+    print_hi('Program Ended')
 
 
 def main_final():
@@ -478,4 +482,7 @@ if __name__ == '__main__':
 # datatype enum class GripperModel
 # f"gripper_macro 6,2,0,0,0,0,0,0,0,0"
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+#todo: update robotG_home position
+#todo: check pcb1 pick and drop points.
+#todo: check screw point of picb1 and pcb2
+
