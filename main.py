@@ -38,8 +38,8 @@ pcb_safe_height = 0
 gripper_safe_height = 0
 
 robotS_home_j = np.array ([34.64, -35.65, 122.06, 3.59, 90.04, -34.66])
-screwFeederHome_j = np.array ([23.702, -27.962, 128, -10.285, 90.036, -23.73])
-screwFeeder = np.array ([316.6, 21.23, 330.5, 89.999, 0.001, 90.001])
+screwFeederHome_j = np.array ([15.681, -15.192, 122.239, -17.048, 90.031, -15.715])
+screwFeeder = np.array ([390.27, -4.48, 333.5 , 90.0, -0.0, 90.0])
 #screwFeeder = np.array ([316.301, -29.953, 323.489, 89.999, 0.001, 90.001])
 
 robotG_home_j = ([173.8, 1.21, -113.95, 22.731, -89.93, 277.11])
@@ -350,9 +350,10 @@ def unscrew(robot, rc, point):
     robot.set_dout_bit_combination(rc, 0, 3, 2, rb.Endian.BigEndian)
     time.sleep(4)
 
-def _main9():
+def _main():
     # initialize cobots
-    robot = rb.Cobot(ROBOT_IP_G)
+    robot = rb.Cobot(ROBOT_IP_S)
+
 
     rc = rb.ResponseCollector()
 
@@ -379,7 +380,7 @@ def _main9():
           ", " + str(J3) + ", " + str(J4) + ", " + str(J5) + "])\n")
     print (res)
 
-def _main():
+def _main8():
     try:
 
         #initialize cobots
@@ -393,6 +394,8 @@ def _main():
 
         robotS.set_operation_mode(rc, rb.OperationMode.Real)
         robotS.set_speed_bar(rc, robot_speed)
+        #robotS.get_system_variable(rc, rb.RobotState.)
+
         # screw home position
         robotS_move_home(robotS, rc)
 
@@ -408,8 +411,6 @@ def _main():
         robotG_move_home(robotG, rc)
         # screw at pcb2
 
-
-        #
         pickScrew(robotS, rc)
         screw_pcb(robotS, rc, p[4])
         pickScrew(robotS, rc)
