@@ -42,15 +42,14 @@ screwFeederHome_j = np.array ([23.702, -27.962, 128, -10.285, 90.036, -23.73])
 screwFeeder = np.array ([316.6, 21.23, 330.5, 89.999, 0.001, 90.001])
 #screwFeeder = np.array ([316.301, -29.953, 323.489, 89.999, 0.001, 90.001])
 
-robotG_home_j = np.array([175.39, -18.47, -90.83, 19.30, -89.94, 275.53])
-robotS_home = np.array([250, -30, 380, 90, 0, 90])
+robotG_home_j = ([173.8, 1.21, -113.95, 22.731, -89.93, 277.11])
+robotS_home = ([590.257, 47.2, 436.718, 89.992, 0.011, 0.992])
 
-pcb1home_j = np.array([170.477, -42.137, -68.748, 20.876, -89.956, 279.956])
-pcb1home = np.array ([984.94, -53.311, 285.455, 89.998, 0.011, 0.499])
+pcb1home_j = np.array ([170.477, -42.137, -68.748, 20.876, -89.956, 279.955])
+pcb1home = np.array ([984.93, -53.28, 285.5, 90.0, 0.01, 0.5])
 
-pcb2home_j = np.array ([176.292, -41.516, -68.507, 20.024, -89.954, 274.14])
-pcb2home = np.array ([985.03, 47.07, 285.71, 90.0, 0.0, 0.5])
-
+pcb2home_j = np.array ([176.31, -42.34, -69.03, 21.37, -89.95, 274.62])
+pcb2home = np.array ([985.03, 47.07, 285.71, 90.0, -0.0, 0.5])
 
 p = np.zeros((18, 6), dtype=np.float16)
 #screwing locations from pcb1
@@ -145,8 +144,9 @@ def robotG_move_home(robotG, rc):
 
     robotG.move_j(rc,robotG_home_j,local_speed,local_acc)
     rc.error().throw_if_not_empty()
-    if robotG.wait_for_move_started(rc, 0.1).type() == rb.ReturnType.Success:
-        robotG.wait_for_move_finished(rc)
+    time.sleep(0.25)
+    while robotG.get_robot_state(rc)[1] == rb.RobotState.Moving:
+        time.sleep(0.5)
     rc.error().throw_if_not_empty()
 
 def robotG_move_pcb1(robot, rc, pickOrDrop):
@@ -343,9 +343,9 @@ def unscrew(robot, rc, point):
     robot.set_dout_bit_combination(rc, 0, 3, 2, rb.Endian.BigEndian)
     time.sleep(4)
 
-def _main():
+def _main9():
     # initialize cobots
-    robot = rb.Cobot(ROBOT_IP_S)
+    robot = rb.Cobot(ROBOT_IP_G)
 
     rc = rb.ResponseCollector()
 
@@ -372,48 +372,53 @@ def _main():
           ", " + str(J3) + ", " + str(J4) + ", " + str(J5) + "])\n")
     print (res)
 
-def _main2():
+def _main():
     try:
 
         #initialize cobots
-        #robotG = rb.Cobot(ROBOT_IP_G)
+        robotG = rb.Cobot(ROBOT_IP_G)
         robotS = rb.Cobot(ROBOT_IP_S)
 
         rc = rb.ResponseCollector()
 
-        #robotG.set_operation_mode(rc, rb.OperationMode.Real)
-        #robotG.set_speed_bar(rc, robot_speed)
+        robotG.set_operation_mode(rc, rb.OperationMode.Real)
+        robotG.set_speed_bar(rc, robot_speed)
 
         robotS.set_operation_mode(rc, rb.OperationMode.Real)
         robotS.set_speed_bar(rc, robot_speed)
+
+        # ready the gripper
+        gripper_move(robotG, rc, jaws_HO)
+        print("Gripper position: 50%")
+        # move robot to home.
+        robotG_move_home(robotG, rc)
+        print("Arrived at robotG_home")
+
+        robotG_move_pcb1(robotG, rc, pick)
+        robotG_move_pcb2(robotG, rc, drop)
+        robotG_move_home(robotG, rc)
+        # screw at pcb2
 
         #screw home position
         robotS_move_home(robotS, rc)
         #
         pickScrew(robotS, rc)
-        screw_pcb(robotS, rc, p[8])
+        #screw_pcb(robotS, rc, p[4])
         #pickScrew(robotS, rc)
-        #screw_pcb(robotS, rc, p[9])
-        unscrew(robotS, rc, p[8])
+        #screw_pcb(robotS, rc, p[5])
+        #pickScrew(robotS, rc)
+        #screw_pcb(robotS, rc, p[6])
+        #pickScrew(robotS, rc)
+        #screw_pcb(robotS, rc, p[7])
+
+        #unscrew(robotS, rc, p[8])
         #unscrew(robotS, rc, p[9])
-        dropScrew(robotS, rc)
+        #dropScrew(robotS, rc)
         #gripper_init(robotG, rc)
-
-        #ready the gripper
-        #gripper_move(robotG, rc, jaws_HO)
-        #print("Gripper position: 50%")
-        #move robot to home.
-        #robotG_move_home(robotG, rc)
-        #print("Arrived at robotG_home")
-
-        #robotG_move_pcb1(robotG, rc, pick)
-        #robotG_move_pcb2(robotG, rc, drop)
-        #screw at pcb2
 
         #robotG_move_pcb2(robotG, rc, pick)
         #robotG_move_pcb1(robotG, rc, drop)
 
-        #robotG_move_home(robotG, rc)
 
         # Move Shank to tighten to 40mm code 00=0
         #robot.set_dout_bit_combination(rc, 0, 1, 0, rb.Endian.LittleEndian)
