@@ -32,7 +32,7 @@ loop_sleep_sec = 0.5
 local_speed = 100
 local_acc = 100
 
-robot_speed = 0.3 # 0 to 1
+robot_speed = 0.7 # 0 to 1
 
 pcb_safe_height = 0
 gripper_safe_height = 0
@@ -283,11 +283,18 @@ def pickScrew(robot,rc):
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
     screwFeeder[2] = screwFeeder[2] - 20
+
     print("RobotS arrived  back at screwfeeder home position")
+
+    screwFeeder[0] = screwFeeder[0] + 100
+    robot.move_l(rc, screwFeeder, local_speed, local_acc)
+    while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
+        time.sleep(0.5)
+    screwFeeder[0] = screwFeeder[0] - 100
 
     #MOVE SHANK TO 35MM
     robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
-    time.sleep(3)
+    time.sleep(1)
 
 
 def robotS_move_home(robot, rc):
@@ -386,6 +393,8 @@ def _main():
 
         robotS.set_operation_mode(rc, rb.OperationMode.Real)
         robotS.set_speed_bar(rc, robot_speed)
+        # screw home position
+        robotS_move_home(robotS, rc)
 
         # ready the gripper
         gripper_move(robotG, rc, jaws_HO)
@@ -399,13 +408,12 @@ def _main():
         robotG_move_home(robotG, rc)
         # screw at pcb2
 
-        #screw home position
-        robotS_move_home(robotS, rc)
+
         #
         pickScrew(robotS, rc)
-        #screw_pcb(robotS, rc, p[4])
-        #pickScrew(robotS, rc)
-        #screw_pcb(robotS, rc, p[5])
+        screw_pcb(robotS, rc, p[4])
+        pickScrew(robotS, rc)
+        screw_pcb(robotS, rc, p[5])
         #pickScrew(robotS, rc)
         #screw_pcb(robotS, rc, p[6])
         #pickScrew(robotS, rc)
@@ -419,19 +427,14 @@ def _main():
         #robotG_move_pcb2(robotG, rc, pick)
         #robotG_move_pcb1(robotG, rc, drop)
 
+        # screw Robot home position
+        robotS_move_home(robotS, rc)
+        robotG_move_home(robotG, rc)
 
-        # Move Shank to tighten to 40mm code 00=0
-        #robot.set_dout_bit_combination(rc, 0, 1, 0, rb.Endian.LittleEndian)
-        # Tighten Bit code 10 = 2
-        #robot.set_dout_bit_combination(rc, 0, 1,2, rb.Endian.LittleEndian)
-        # Move Shank to loosen to 48mm code 01 =1
-        #robot.set_dout_bit_combination(rc, 0, 1, 1, rb.Endian.LittleEndian)
-        # loosen code  11 =3
-        #robot.set_dout_bit_combination(rc, 0, 1, 3, rb.Endian.LittleEndian)
 
 
         robotS.flush(rc)
-        #robotG.flush(rc)
+        robotG.flush(rc)
     except Exception as e:
         print(e)
     finally:
