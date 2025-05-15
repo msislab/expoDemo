@@ -12,6 +12,8 @@ from sys import exit
 ROBOT_IP_G = "192.168.0.20"
 ROBOT_IP_S = "192.168.0.21"
 
+robot_speed = 0.9 # 0 to 1
+
 fatal_error = False;
 error_msg = "No Error"
 
@@ -32,28 +34,37 @@ loop_sleep_sec = 0.5
 local_speed = 100
 local_acc = 100
 
-robot_speed = 0.7 # 0 to 1
+local_speed2 = 200
+local_acc2 = 400
 
 pcb_safe_height = 0
 gripper_safe_height = 0
 
-robotS_home_j = np.array ([34.64, -35.65, 122.06, 3.59, 90.04, -34.66])
-robotS_home = ([590.257, 47.2, 436.718, 89.992, 0.011, 0.992])
+#updated
+robotS_home_j = np.array ([3.6, -16.2, 111.8, -5.6, 90.0, -3.6])
+robotS_home = ([388.829, -85.597, 443.756, 89.998, 0.033, 90.029])
 
 screwFeederHome_j = np.array ([15.681, -15.192, 122.239, -17.048, 90.031, -15.715])
-screwFeeder = np.array ([390.27, -4.48, 333.5 , 90.0, -0.0, 90.0])
+screwFeeder = np.array ([390.27, -4.48, 332.5 , 90.0, -0.0, 90.0])
 
-robotG_home_j = ([173.8, 1.21, -113.95, 22.731, -89.93, 277.11])
-robotG_home = ([0 ,0 ,0 ,0 ,0 , 0])
+robotG_home_j = np.array ([173.8, 1.21, -113.95, 22.73, -89.93, 277.11])
+robotG_home = np.array([590.257, 47.2, 436.718, 89.992, 0.011, 0.992])
 
 
-pcb1home_j = np.array ([170.477, -42.137, -68.748, 20.876, -89.956, 279.955])
-pcb1home = np.array ([984.93, -53.28, 285.5, 90.0, 0.01, 0.5])
+pcb1home_j = np.array ([170.601, -41.221, -67.731, 18.954, -89.958, 279.842])
+pcb1home = np.array ([985.87, -51.08, 286.66, 90.0, 0.01, 0.51])
 
-pcb2home_j = np.array ([176.31, -42.34, -69.03, 21.37, -89.95, 274.62])
-pcb2home = np.array ([985.03, 47.07, 285.71, 90.0, -0.0, 0.5])
+pcb2home_j = np.array ([176.47, -41.047, -67.5, 18.549, -89.949, 273.97])
+pcb2home = np.array ([985.83, 50.0, 286.3, 90.0, 0.0, 0.5])
 
 p = np.zeros((18, 6), dtype=np.float16)
+
+#camera points
+cam2_j = np.array ([176.042, -43.705, -60.331, 14.02, -90.043, 272.851])
+cam2_p = np.array ([1017.146, 40.354, 354.58, 89.91, 0.02, -1.05])
+
+cam1_j = ([170.458, -43.629, -60.468, 14.09, -90.044, 278.435])
+cam1_p = np.array ([1015.59, -58.69, 354.58, 89.91, 0.02, -1.05])
 
 #screwing locations from pcb1
 p[0] = np.array([575.406, 24.9550, 263.38, 90, 0, 90])
@@ -62,10 +73,10 @@ p[2] = np.array([668.08, 80.93, 263.38, 90, 0, 90])
 p[3] = np.array([668.08, 24.14, 263.55, 90, 0, 90])
 
 #screwing locations from pcb2
-p[4] = np.array ([576.74, -73.58, 245.0, 90.0, -0.0, 90.0])
-p[5] = np.array ([576.559, -16.968, 245.001, 90.0, 0.001, 90.001])
+p[4] = np.array ([576.79, -73.909, 245.0, 90.0, -0.0, 90.0])
+p[5] = np.array ([576.56, -17.22, 245.0, 90.0, 0.0, 90.0])
 p[6] = np.array ([669.09, -17.3, 245.0, 90.0, -0.0, 90.0])
-p[7] = np.array ([669.15, -73.499, 245.0, 90.0, 0.0, 90.0])
+p[7] = np.array ([669.15, -74.2, 245.0, 90.0, -0.0, 90.0])
 
 #test points
 p[8] = np.array([367.50, 124, 245.0, 90.0, 0.0, 90.0])
@@ -74,14 +85,14 @@ p[10] = np.array ([458.6, 180.8, 245.0, 90.0, 0.0, 90.0])
 p[11] = np.array ([458.8, 124.4, 245.0, 90.0, 0.0, 90.0])
 
 #Screw drop points from p[12] to p[13]
-p[12] = np.array ([288.144, 151.854, 285.714, 90.0, -0.0, 90.0]) #xyz
-p[13] = np.array ([47.495, -20.605, 138.863, -28.258, 90.032, -47.533]) #joints
+p[12] = np.array ([466.662, -74.405, 308.039, 90.0, 0.0, 90.0]) #xyz
+p[13] = np.array ([4.374, 0.744, 118.335, -29.079, 90.021, -4.414]) #joints
 
-p[14] = np.array ([288.144, 151.854, 251.86, 90.0, -0.0, 90.0])
-p[15] = np.array ([47.495, -16.811, 142.449, -35.637, 90.028, -47.536])
+p[14] = np.array ([466.66, -81.07, 258.0, 90.0, -0.0, 90.0])
+p[15] = ([3.546, 5.754, 122.8, -38.555, 90.017, -3.589])
 
-p[16] = np.array ([288.144, 213.429, 251.86, 90.0, -0.0, 90.0])
-p[17] = np.array ([54.36, -10.929, 138.473, -37.545, 90.026, -54.403])
+p[16] = np.array ([466.66, -171.5, 258.0, 90.0, 0.0, 90.0])
+p[17] = np.array ([-7.423, 8.726, 119.31, -38.036, 90.015, 7.38])
 
 #p_j[0] =np.array
 #p_j[1] =np.array
@@ -111,8 +122,10 @@ def gripper_init(robot,rc):
         time.sleep(7)
         script = f"gripper_macro 6,2,1,0,5,50,100,0,0,0"
         robot.eval(rc, script, True)
+        gripper_move(robot, rc, 50)
         while (gripper_pos(robot, rc) != 50):
             time.sleep(0.5)
+            print(". ")
 
         #if ( gripper_pos(robot,rc)-100) < 1:
         #    error_msg = "Gripper Error, Commanded and Feedback position not Equal"
@@ -138,7 +151,13 @@ def gripper_move(robot,rc, pos):
     finally:
         pass
 
-
+def robotG_move(robot, rc, point):
+    robot.move_l(rc, point, local_speed2, local_acc2)
+    print("Robot G moving")
+    while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
+        print(". ")
+        time.sleep(0.5)
+    time.sleep(3)
 
 def robotG_move_home(robotG, rc):
     # move robot to home.
@@ -146,13 +165,15 @@ def robotG_move_home(robotG, rc):
     robotG.move_j(rc,robotG_home_j,local_speed,local_acc)
     rc.error().throw_if_not_empty()
     time.sleep(0.25)
+    print("Robot G moving to home")
     while robotG.get_robot_state(rc)[1] == rb.RobotState.Moving:
+        print(". ")
         time.sleep(0.5)
     rc.error().throw_if_not_empty()
 
 def robotG_move_pcb1(robot, rc, pickOrDrop):
 
-    if pickOrDrop ==0:
+    if pickOrDrop == pick:
         gripper_move(robot, rc, jaws_HO)
         while (gripper_pos(robot, rc) != jaws_HO):
             time.sleep(0.5)
@@ -171,14 +192,14 @@ def robotG_move_pcb1(robot, rc, pickOrDrop):
         time.sleep(0.5)
     print("Arrived at pcb1home")
 
-    if pickOrDrop == 0:
+    if pickOrDrop == pick:
         #Gripper jaws to CLOSE %.
         gripper_move(robot,rc,jaws_HC)
         time.sleep(0.25)
         while(gripper_pos(robot,rc)!=jaws_HC):
             time.sleep(0.5)
         print("Jaws Position: "+str(gripper_pos(robot, rc)))
-    elif pickOrDrop == 1:
+    elif pickOrDrop == drop:
         gripper_move(robot, rc, jaws_HO)
         time.sleep(0.25)
         while (gripper_pos(robot, rc) != jaws_HO):
@@ -235,7 +256,7 @@ def robotG_move_pcb2(robot, rc, pickOrDrop):
         time.sleep(0.5)
     print("Arrived at pcb2home +20mm")
     pcb2home[2] = pcb2home[2] - 20
-def dropScrew(robot, rc):
+def dropScrew(robot, rc) :
     #SHANK TO 55MM 1111= 15
     robot.set_dout_bit_combination(rc, 0, 3, 15, rb.Endian.BigEndian)
     time.sleep(3)
@@ -244,12 +265,12 @@ def dropScrew(robot, rc):
         time.sleep(0.5)
     print ("RobotS drop first position")
 
-    robot.move_j(rc, p[15], local_speed, local_acc)
+    robot.move_l(rc, p[14], local_speed, local_acc)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
     print("RobotS drop 2nd position")
 
-    robot.move_j(rc, p[17], local_speed, local_acc)
+    robot.move_l(rc, p[16], local_speed, local_acc)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
     print("RobotS drop 3rd position")
@@ -277,67 +298,78 @@ def pickScrew(robot,rc):
 
     # Pick Screw code 1000=8
     robot.set_dout_bit_combination(rc, 0, 3, 8, rb.Endian.BigEndian)
-    time.sleep(4)
+    time.sleep(3)
 
-    screwFeeder[2] = screwFeeder[2] + 20
+    screwFeeder[2] = screwFeeder[2] + 100
     robot.move_l(rc, screwFeeder, local_speed, local_acc)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
-    screwFeeder[2] = screwFeeder[2] - 20
+    screwFeeder[2] = screwFeeder[2] - 100
 
     print("RobotS arrived  back at screwfeeder home position")
+    # MOVE SHANK TO 35MM
+    robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
 
-    screwFeeder[0] = screwFeeder[0] + 100
-    robot.move_l(rc, screwFeeder, local_speed, local_acc)
-    while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
-        time.sleep(0.5)
-    screwFeeder[0] = screwFeeder[0] - 100
+    #screwFeeder[0] = screwFeeder[0] + 100
+    #robot.move_l(rc, screwFeeder, local_speed, local_acc)
+    #print ("moving to safe screw space")
+    #while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
+    #    print(". ")
+    #    time.sleep(0.5)
+    #screwFeeder[0] = screwFeeder[0] - 100
 
     #MOVE SHANK TO 35MM
-    robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
-    time.sleep(1)
+    #robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
+    #time.sleep(3)
 
 
 def robotS_move_home(robot, rc):
     robot.move_j(rc, robotS_home_j, local_acc, local_acc)
+    print("RobotS moving to home")
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
-        time.sleep(0.5)
+        print(". ")
+        time.sleep(0.25)
     print("Arrived at robotS_home")
 
 def screw_pcb(robot, rc, point):
+    #move shank to 35mm
     robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
-    time.sleep(3)
+    time.sleep(1)
+
     point[2] = point[2] + 50
-    robot.move_l(rc, point, local_speed, local_acc)
+    robot.move_l(rc, point, local_speed2, local_acc2)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
     point[2] = point[2] - 50
 
-    robot.move_l(rc, point, local_speed, local_acc)
+    robot.move_l(rc, point, local_speed2, local_acc2)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
 
     robot.set_dout_bit_combination(rc, 0, 3, 4, rb.Endian.BigEndian)
-    time.sleep(8)
-    point[2] = point[2] + 200
-    robot.move_l(rc, point, local_speed, local_acc)
+    time.sleep(7.5)
+    point[2] = point[2] + 100
+    robot.move_l(rc, point, local_speed2, local_acc2)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
-    point[2] = point[2] - 200
+    point[2] = point[2] - 100
 
 def unscrew(robot, rc, point):
     #MOVE SHANK TO 35MM
     robot.set_dout_bit_combination(rc, 0, 3, 0, rb.Endian.BigEndian)
     time.sleep(3)
-    point[2] = point[2] + 50
+    point[2] = point[2] + 20
     robot.move_l(rc, point, local_speed, local_acc)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
-    point[2] = point[2] - 50
+    point[2] = point[2] - 20
 
+    point[2] = point[2] + 5
     robot.move_l(rc, point, local_speed, local_acc)
     while robot.get_robot_state(rc)[1] == rb.RobotState.Moving:
         time.sleep(0.5)
+    point[2] = point[2] - 5
+    time.sleep(0.25)
     #LOOSEN THE SCREW 1100=12
     robot.set_dout_bit_combination(rc, 0, 3, 12, rb.Endian.BigEndian)
     time.sleep(8)
@@ -351,15 +383,47 @@ def unscrew(robot, rc, point):
     robot.set_dout_bit_combination(rc, 0, 3, 2, rb.Endian.BigEndian)
     time.sleep(4)
 
-def _main():
+def _main3():
     # initialize cobots
-    robot = rb.Cobot(ROBOT_IP_S)
-
+    robot = rb.Cobot(ROBOT_IP_G)
 
     rc = rb.ResponseCollector()
 
     robot.set_operation_mode(rc, rb.OperationMode.Real)
-    robot.set_speed_bar(rc, robot_speed) #30% speed
+    robot.set_speed_bar(rc, 0.7) #30% speed
+
+    robotG_move(robot, rc, cam2_p)
+
+    # unscrew(robot, rc, p[4])
+    # dropScrew(robot, rc)
+    # unscrew(robot, rc, p[5])
+    # dropScrew(robot, rc)
+    # unscrew(robot, rc, p[6])
+    # dropScrew(robot, rc)
+    # unscrew(robot, rc, p[7])
+    # dropScrew(robot, rc)
+
+    # robotS_move_home(robot, rc)
+
+    #robotS_move_home(robot, rc)
+    #robotG_move_pcb1(robot, rc, pick)
+    #robotG_move_pcb2(robot, rc, drop)
+    #robotG_move_home(robot, rc)
+    #robotG_move_cam(robot, rc, cam1_p)
+    #robotG_move_cam(robot, rc, cam2_p)
+    #robotG_move_home(robot, rc)
+
+
+    #pickScrew(robot, rc)
+    #screw_pcb(robot, rc, p[4])
+    #pickScrew(robot, rc)
+    #screw_pcb(robot, rc, p[5])
+    #pickScrew(robot, rc)
+    #screw_pcb(robot, rc, p[6])
+    #pickScrew(robot, rc)
+    #screw_pcb(robot, rc, p[7])
+    #dropScrew(robot, rc)
+    #robotG_move_home(robot,rc)
 
     #exit("good exit")
     position = np.array([0, 0, 0, 0, 0, 0])
@@ -381,7 +445,7 @@ def _main():
           ", " + str(J3) + ", " + str(J4) + ", " + str(J5) + "])\n")
     print (res)
 
-def _main8():
+def _main():
     try:
 
         #initialize cobots
@@ -395,60 +459,82 @@ def _main8():
 
         robotS.set_operation_mode(rc, rb.OperationMode.Real)
         robotS.set_speed_bar(rc, robot_speed)
-        #robotS.get_system_variable(rc, rb.RobotState.)
 
         # screw home position
         robotS_move_home(robotS, rc)
-        print("Robot have arrived at ")
+        print("RobotS have arrived home ")
+
+        # move robot to home.
+        robotG_move_home(robotG, rc)
+        print("Arrived at robotG_home")
 
         gripper_init(robotG, rc)
         # ready the gripper
         gripper_move(robotG, rc, jaws_HO)
         print("Gripper position: 50%")
-        # move robot to home.
-        robotG_move_home(robotG, rc)
-        print("Arrived at robotG_home")
-
-        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
-            print(". ")
 
         #res, points = robotS.get_tcp_info(rc,)
+        robotG_move(robotG, rc, cam1_p)
+
         robotG_move_pcb1(robotG, rc, pick)
         robotG_move_pcb2(robotG, rc, drop)
-        robotG_move_home(robotG, rc)
 
-        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
+        robotG_move(robotG, rc, cam2_p)
+
+        print("Moving RobotG to home")
+        robotG_move_home(robotG, rc)
+        while round(robotG.get_tcp_info(rc)[1][0]) != round(robotG_home[0]):
             print(". ")
-        # screw at pcb2
+
         pickScrew(robotS, rc)
         screw_pcb(robotS, rc, p[4])
         pickScrew(robotS, rc)
         screw_pcb(robotS, rc, p[5])
-        #pickScrew(robotS, rc)
-        #screw_pcb(robotS, rc, p[6])
-        #pickScrew(robotS, rc)
-        #screw_pcb(robotS, rc, p[7])
+        pickScrew(robotS, rc)
+        screw_pcb(robotS, rc, p[6])
+        pickScrew(robotS, rc)
+        screw_pcb(robotS, rc, p[7])
 
-        #unscrew(robotS, rc, p[4])
-        # dropScrew(robotS, rc)
-        #unscrew(robotS, rc, p[5])
-        #dropScrew(robotS, rc)
-        # unscrew(robotS, rc, p[6])
-        # dropScrew(robotS, rc)
-        # unscrew(robotS, rc, p[7])
-        # dropScrew(robotS, rc)
+        # screwing done move to home
+        print ("Moving RobotS to home..")
+        robotS_move_home(robotS, rc)
+        while round(robotS.get_tcp_info(rc)[1][0]) != round(robotS_home[0]):
+            print(". ")
+            time.sleep(0.25)
 
-        #screwing done move to home
+        robotG_move (robotG, rc, cam2_p)
+
+        print ("RobotG to home... ")
+        robotG_move_home(robotG, rc)
+        while round(robotG.get_tcp_info(rc)[1][0]) != round(robotG_home[0]):
+            print(". ")
+            time.sleep(0.25)
+
+        unscrew(robotS, rc, p[4])
+        dropScrew(robotS, rc)
+        unscrew(robotS, rc, p[5])
+        dropScrew(robotS, rc)
+        unscrew(robotS, rc, p[6])
+        dropScrew(robotS, rc)
+        unscrew(robotS, rc, p[7])
+        dropScrew(robotS, rc)
+
         robotS_move_home(robotS, rc)
 
-        while robotG.get_tcp_info(rc)[1][0] != robotG_home[0]:
+        while round(robotS.get_tcp_info(rc)[1][0]) != round(robotS_home[0]):
             print(". ")
 
-        robotG_move_pcb2(robotG, rc, pick)
-        robotG_move_pcb1(robotG, rc, drop)
+        robotG_move (robotG, rc, cam2_p)
+        robotG_move_pcb2 (robotG, rc, pick)
+        robotG_move_pcb1 (robotG, rc, drop)
+        robotG_move(robotG, rc, cam1_p)
 
-        # screw Robot home position
+        print("RobotG Moving to home")
+
         robotG_move_home(robotG, rc)
+        #while round(robotG.get_tcp_info(rc)[1][0]) != round(robotG_home[0]):
+        #    print(". ")
+
         robotS.flush(rc)
         robotG.flush(rc)
 
